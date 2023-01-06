@@ -6,7 +6,7 @@ const cors = require("cors");
 
 const app = express();
 
-app.use(cors({ origin: 'http://localhost:3001' }));
+app.use(cors({ origin: '*' }));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 
@@ -76,8 +76,14 @@ app.get("/fetch-pdf", (request, response) => {
     generatePdf(
         docDefinition,
         function (base64String) {
+
+            console.log('Show me the base 64: ', base64String);
+            console.log('Type of the base 64: ', typeof (base64String));
+
             const base64ToArrayBufferContent = base64ToArrayBuffer.decode(base64String)
-            response.send(base64ToArrayBufferContent);
+
+            console.log('Show me the array buffer: ', base64ToArrayBufferContent);
+            response.contentType('application/pdf').send(base64String);
         },
         function (error) {
             response.send("ERROR:" + error);
