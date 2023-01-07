@@ -10,32 +10,25 @@ app.use(cors({ origin: '*' }));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 
-function generatePdf(docDefinition, callback) {
+app.get("/", (request, response) => {
+    response.send("Hi there");
+});
+
+app.get("/fetch-pdf", (request, response) => {
+
     try {
+        const docDefinition = {
+            content: "Dummy content", defaultStyle: {
+                font: 'Roboto'
+            }
+        };
+
         const fontDescriptors = {
-            Courier: {
-                normal: 'Courier',
-                bold: 'Courier-Bold',
-                italics: 'Courier-Oblique',
-                bolditalics: 'Courier-BoldOblique'
-            },
-            Helvetica: {
-                normal: 'Helvetica',
-                bold: 'Helvetica-Bold',
-                italics: 'Helvetica-Oblique',
-                bolditalics: 'Helvetica-BoldOblique'
-            },
-            Times: {
-                normal: 'Times-Roman',
-                bold: 'Times-Bold',
-                italics: 'Times-Italic',
-                bolditalics: 'Times-BoldItalic'
-            },
-            Symbol: {
-                normal: 'Symbol'
-            },
-            ZapfDingbats: {
-                normal: 'ZapfDingbats'
+            Roboto: {
+                normal: 'font/roboto/Roboto-Regular.ttf',
+                bold: 'font/roboto/Roboto-Regular.ttf',
+                italics: 'font/roboto/Roboto-Regular.ttf',
+                bolditalics: 'font/roboto/Roboto-Regular.ttf'
             }
         };
         const printer = new pdfMakePrinter(fontDescriptors);
@@ -50,8 +43,9 @@ function generatePdf(docDefinition, callback) {
 
         doc.on('end', () => {
             result = Buffer.concat(chunks);
-            callback('data:application/pdf;base64,' + result.toString('base64'));
             console.log("PDF successfully created and stored");
+
+            response.send(result);
         });
 
         doc.end();
@@ -59,36 +53,6 @@ function generatePdf(docDefinition, callback) {
     } catch (err) {
         throw (err);
     }
-};
-
-app.get("/", (request, response) => {
-    response.send("Hi there");
-});
-
-app.get("/fetch-pdf", (request, response) => {
-
-    const docDefinition = {
-        content: "Dummy content", defaultStyle: {
-            font: 'Helvetica'
-        }
-    };
-
-    generatePdf(
-        docDefinition,
-        function (base64String) {
-
-            console.log('Show me the base 64: ', base64String);
-            console.log('Type of the base 64: ', typeof (base64String));
-
-            const base64ToArrayBufferContent = base64ToArrayBuffer.decode(base64String)
-
-            console.log('Show me the array buffer: ', base64ToArrayBufferContent);
-            response.contentType('application/pdf').send(base64String);
-        },
-        function (error) {
-            response.send("ERROR:" + error);
-        }
-    );
 
 });
 
